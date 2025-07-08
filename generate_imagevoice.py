@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 from image_process import generate_image
-from voice_process_wip import generate_voice
+from voice_process import generate_voice
 import json
 import pathlib
 import os

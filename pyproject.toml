@@ -1,6 +1,6 @@
 [project]
 name = "zatugaku"
-version = "1.0.0"
+version = "1.0.1"
 description = "雑学動画ジェネレータ"
 readme = "README.md"
 requires-python = ">=3.12"
