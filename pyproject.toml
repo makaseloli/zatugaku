@@ -1,7 +1,7 @@
 [project]
 name = "zatugaku"
-version = "1.0.1"
-description = "雑学動画ジェネレータ"
+version = "2.0.0"
+description = "リポジトリ動画概要"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -15,9 +15,11 @@ dependencies = [
     "mcp>=1.10.1",
     "moviepy>=2.2.1",
     "pillow>=11.3.0",
+    "pygithub>=2.6.1",
     "pyopenjtalk>=0.4.1",
     "scipy>=1.16.0",
     "sentencepiece>=0.2.0",
     "tomli>=2.2.1",
-    "torchaudio>=2.7.1",
+    "tree-sitter>=0.24.0",
+    "tree-sitter-language-pack>=0.9.0",
 ]

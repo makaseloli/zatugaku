@@ -7,6 +7,7 @@ import pathlib
 from generate_imagevoice import process_json
 from generate_video import finally_create_video
 import shutil
+from repo_process import clone_repo
 
 
 def get_version():
@@ -62,30 +63,31 @@ def video_gen_handler():
 
     return "./temp/final_video_with_bgm.mp4"
 
-def process_upload(files, bgm_files, font_files):
+def process_upload(repo_name, bgm_files, font_files):
     """アップロードされたファイルを処理するハンドラー"""
 
-    if not files:
-        return "資料がアップロードされていません"
+    clean_temp_directory()
+
+    if not repo_name:
+        return "リポジトリ名を入力してください。"
     
     if not bgm_files:
-        return "BGMファイルがアップロードされていません"
+        return "BGMファイルがアップロードされていません。"
     
     if not font_files:
-        return "フォントファイルがアップロードされていません"
+        return "フォントファイルがアップロードされていません。"
 
     pathlib.Path("./temp/bgm").mkdir(parents=True, exist_ok=True)
     pathlib.Path("./temp/font").mkdir(parents=True, exist_ok=True)
 
 
-    print(f"アップロードされたファイル: {[file.name for file in files]}")
-
     shutil.copy2(font_files.name, "./temp/font")
     shutil.copy2(bgm_files.name, "./temp/bgm")
+
+    clone_repo(repo_name)
     
     try:
-        file_paths = [file.name for file in files]
-        result = create_index(file_paths)
+        result = create_index()
         return result
     except Exception as e:
         return f"エラーが発生しました: {str(e)}"
@@ -94,9 +96,9 @@ def process_upload(files, bgm_files, font_files):
 def define_gradio_interface():
     """Gradioのインターフェースを定義"""
 
-    with gr.Blocks(css=CUSTOM_CSS, theme=gr.themes.Base()) as gui:
+    with gr.Blocks(css=CUSTOM_CSS, theme=gr.themes.Base()) as gui: # type: ignore
 
-        gr.Markdown(f"""# 雑学動画ジェネレータ""")
+        gr.Markdown(f"""# 動画概要""")
 
         with gr.Row():
             with gr.Tab("資料のアップロード"):
@@ -105,10 +107,9 @@ def define_gradio_interface():
                     gr.Markdown("""
                     ## 資料のアップロード
                     """)
-                    upload_input = gr.File(
-                        label="資料ファイルをアップロード",
-                        file_types=[".pdf", ".txt", ".md", ".html", ".docx", ".csv", ".png", ".jpg", ".jpeg", ".webp", ".mp4", ".mp3", ".wav"],
-                        file_count="multiple",
+                    upload_input = gr.Textbox(
+                        label="リポジトリ名を入力",
+                        placeholder="makaseloli/zatugaku"
                     )
                     bgm_input = gr.File(
                         label="BGMファイルをアップロード",
@@ -119,11 +120,8 @@ def define_gradio_interface():
                         file_types=[".ttf", ".otf"],
                     )
 
-                    upload_input.clear(
-                        fn=clear_index_handler,
-                    )
-
-                    upload_button = gr.Button("資料をアップロード")
+                    upload_button = gr.Button("ファイルをアップロード")
+                    clear_button = gr.Button("インデックスを消去")
                     upload_process = gr.Textbox(interactive=False, label="アップロード結果")
 
                     upload_button.click(
@@ -132,24 +130,22 @@ def define_gradio_interface():
                         outputs=[upload_process]
                     )
 
-            with gr.Tab("雑学の出力"):
-                with gr.Column():
-                    query_input = gr.Textbox(
-                        label="雑学を生成したい質問を入力",
-                        placeholder="例: 提供された情報",
-                        interactive=True,
-                        value="提供された情報"
+                    clear_button.click(
+                        fn=clear_index_handler,
                     )
+
+            with gr.Tab("文章の出力"):
+                with gr.Column():
                     num_input = gr.Number(
-                        label="生成する雑学の数",
+                        label="ページ数",
                         value=5,
                     )
-                    generate_button = gr.Button("雑学を生成")
-                    output_text = gr.Textbox(interactive=False, label="生成された雑学")
+                    generate_button = gr.Button("文章を生成")
+                    output_text = gr.Textbox(interactive=False, label="生成された文章")
 
                     generate_button.click(
                         fn=generate_zatugaku,
-                        inputs=[query_input, num_input],
+                        inputs=[num_input],
                         outputs=[output_text]
                     )
 
@@ -184,10 +180,22 @@ def define_gradio_interface():
                         outputs=[genvideo_output]
                     )
 
-            with gr.Tab("設定"):
+            with gr.Tab("情報"):
 
-                gr.Markdown("## バージョン情報")
                 version_info = f"バージョン: {get_version()}"
-                gr.Markdown(version_info)
+                gr.Markdown(f"""
+                ## バージョン情報
+                {version_info}
+                """)
+
+                gr.Markdown("""
+                ## フォント
+                [Klee One](https://fonts.google.com/specimen/Klee+One)
+                """)
+
+                gr.Markdown("""
+                ## 免責事項
+                このプログラムの使用によって発生した問題に対し、私は一切責任を負いません。
+                """)
 
     return gui

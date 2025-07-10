@@ -23,7 +23,7 @@ def generate_image(prompt: str, file_name: str):
         num_inference_steps=4,
         max_sequence_length=256,
         generator=torch.Generator("cpu").manual_seed(0)
-    ).images[0]
+    ).images[0] # type: ignore
     torch.cuda.empty_cache()
     
 

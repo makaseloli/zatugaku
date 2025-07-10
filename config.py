@@ -10,6 +10,7 @@ GRADIO_HOST = os.getenv("GRADIO_HOST", "127.0.0.1")
 GRADIO_PORT = int(os.getenv("GRADIO_PORT", 7860))
 
 HF_TOKEN = os.getenv("HF_TOKEN", "")
+GH_TOKEN = os.getenv("GH_TOKEN", "")
 
 CUSTOM_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Klee+One&display=swap');
@@ -23,8 +24,9 @@ CUSTOM_CSS = """
 """
 
 SYSTEM_PROMPT = """
-あなたは雑学に関する動画の台本を作成してください。
-指定されたジャンルにまつわる雑学を１つあたり２ページに分けて簡潔に短く書いてください。だ、である口調でお願いします。
+あなたは与えられたリポジトリの解説に関する動画の台本を作成してください。
+リポジトリの内容を理解し、各項目について簡潔に説明することが求められています。
+説明を1つあたり2ページに分けて書いてください。だ、である口調でお願いします。
 
 以下のjsonフォーマットに従ってください。
 {
