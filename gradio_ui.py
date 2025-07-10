@@ -132,6 +132,7 @@ def define_gradio_interface():
 
                     clear_button.click(
                         fn=clear_index_handler,
+                        outputs=[upload_process]
                     )
 
             with gr.Tab("文章の出力"):

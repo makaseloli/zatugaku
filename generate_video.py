@@ -14,7 +14,7 @@ def create_video(image_path, audio_path, output_filename):
 
     output_dir = pathlib.Path("./temp/video")
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     
     output_path = output_dir / output_filename
     video_clip.write_videofile(
@@ -73,12 +73,12 @@ def add_bgm():
     video_duration = video_clip.duration
     bgm_duration = bgm_clip.duration
 
-    bgm_clip = bgm_clip.with_duration(video_clip.duration)
-
     if bgm_duration < video_duration:
         loop_count = int(video_duration / bgm_duration) + 1
         bgm_clips = [bgm_clip] * loop_count
         bgm_clip = concatenate_audioclips(bgm_clips)
+
+    bgm_clip = bgm_clip.with_duration(video_clip.duration)
 
     final_audio = CompositeAudioClip([video_clip.audio, bgm_clip.with_volume_scaled(0.3)])
     

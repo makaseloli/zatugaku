@@ -88,7 +88,7 @@ def process_json(json_data, toggle_shorts, debug=False):
         text2 = value[1]
 
         text_area_width = 1850
-        text_area_start_y = 540
+        text_area_start_y = 560
         text_area_height = 540
 
         if toggle_shorts:
@@ -156,8 +156,8 @@ if __name__ == "__main__":
     """
     {
         "key1": [
-            "これは1ページ目です", 
-            "これは2ページ目です",
+            "このリポジトリは、カスタマイズ可能な検索インターフェースを提供するSvelteアプリケーションです。ユーザーは複数の検索エンジン（Google、Bing、DuckDuckGoなど）を選択し、キーボードショートカットで検索ボックスにフォーカスを当てて検索できます。また、GGRKSやGGRBKに関する情報も確認できます。",
+            "UIデザインはシンプルで、ダークモードに対応した入力フィールドとボタンが特徴です。検索エンジンの選択はドロップダウンから行い、カスタマイズ可能な設定が可能です。ページ内にはヒントも表示され、ユーザーの利便性を考慮しています。", 
             "A beautiful landscape with mountains and a river"
         ]
     }
