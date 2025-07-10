@@ -56,7 +56,7 @@ def create_index():
                     "file_type": file_path.suffix,
                     "directory": str(file_path.parent),
                     "file_size": len(content),
-                    "is_code": file_path.suffix in ['.py', '.js', '.ts', '.java', '.cpp', 'svelte', '.go', '.c', '.h', '.sh'],
+                    "is_code": file_path.suffix in ['.py', '.js', '.ts', '.java', '.cpp', 'svelte', '.go', '.c', '.h', '.sh', '.rs', '.rb', '.php', '.html', '.css'],
                 }
 
                 print(metadata)
@@ -93,11 +93,15 @@ def create_index():
             ".c": CodeSplitter(language="c", chunk_lines=50, chunk_lines_overlap=20, max_chars=2000),
             ".h": CodeSplitter(language="c", chunk_lines=50, chunk_lines_overlap=20, max_chars=2000),
             ".sh": CodeSplitter(language="bash", chunk_lines=50, chunk_lines_overlap=20, max_chars=2000),
+            ".rs": CodeSplitter(language="rust", chunk_lines=50, chunk_lines_overlap=20, max_chars=2000),
+            ".rb": CodeSplitter(language="ruby", chunk_lines=50, chunk_lines_overlap=20, max_chars=2000),
+            ".php": CodeSplitter(language="php", chunk_lines=50, chunk_lines_overlap=20, max_chars=2000),
+            ".html": CodeSplitter(language="html", chunk_lines=50, chunk_lines_overlap=20, max_chars=2000),
+            ".css": CodeSplitter(language="css", chunk_lines=50, chunk_lines_overlap=20, max_chars=2000),
         }
 
         docs_with_splitter = []
         docs_without_splitter = []
-        transformations = []
 
         for doc in documents:
             ext = doc.metadata.get("file_type", "")

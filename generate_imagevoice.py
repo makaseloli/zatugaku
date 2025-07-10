@@ -44,110 +44,87 @@ def process_json(json_data, toggle_shorts, debug=False):
     json_data = json.loads(json_data)
 
     for key, value in json_data.items():
-        if not debug:
-            generate_image(value[2], key)
+        # valueはリスト、各要素はdictで"text"(リスト)と"image_prompt"(str)
+        for idx, item in enumerate(value):
+            texts = item["text"]
+            image_prompt = item["image_prompt"]
 
-        base = Image.new('RGB', (1920, 1080), (255, 255, 255))
-        if toggle_shorts:
-            base = Image.new('RGB', (1080, 1920), (255, 255, 255))
+            # 画像生成（debug時はスキップ）
+            if not debug:
+                generate_image(image_prompt, key)
 
-        if debug:
-            ai_img = Image.new('RGB', (1024, 1024), (255, 0, 0))
-        else:
-            ai_img = Image.open(f"./temp/ai/{key}.png")
+            base = Image.new('RGB', (1920, 1080), (255, 255, 255))
+            if toggle_shorts:
+                base = Image.new('RGB', (1080, 1920), (255, 255, 255))
 
-        ai_width, ai_height = ai_img.size
+            if debug:
+                ai_img = Image.new('RGB', (1024, 1024), (255, 0, 0))
+            else:
+                ai_img = Image.open(f"./temp/ai/{key}.png")
 
-        bairitu = 0.7
+            ai_width, ai_height = ai_img.size
+            bairitu = 0.7
+            if toggle_shorts:
+                bairitu = 0.8
+            ai_width = int(ai_width * bairitu)
+            ai_height = int(ai_height * bairitu)
+            ai_img = ai_img.resize((ai_width, ai_height), Image.Resampling.LANCZOS)
 
-        if toggle_shorts:
-            bairitu = 0.8
+            center_x = (1920 - ai_width) // 2
+            center_y = (180 + 540 - ai_height) // 2
+            if toggle_shorts:
+                center_x = (1080 - ai_width) // 2
+                center_y = (1050 - ai_height) // 2
+            base.paste(ai_img, (center_x, center_y))
 
-        ai_width = int(ai_width * bairitu)
-        ai_height = int(ai_height * bairitu)
+            # ページごとに画像・音声生成
+            font_path = sorted(os.listdir("./temp/font"))[0]
+            font_path = f"./temp/font/{font_path}"
+            font = ImageFont.truetype(font_path, 60)
 
-        ai_img = ai_img.resize((ai_width, ai_height), Image.Resampling.LANCZOS)
-        
-        center_x = (1920 - ai_width) // 2
-        center_y = (180 + 540 - ai_height) // 2
-        if toggle_shorts:
-            center_x = (1080 - ai_width) // 2
-            center_y = (1050 - ai_height) // 2
-        
-        base.paste(ai_img, (center_x, center_y))
+            text_area_width = 1850
+            text_area_start_y = 560
+            text_area_height = 540
+            if toggle_shorts:
+                text_area_width = 960
+                text_area_start_y = 540
+                text_area_height = 1080 + 100
 
-        page1 = base.copy()
-        page2 = base.copy()
+            line_height = 50
 
-        font_path = sorted(os.listdir("./temp/font"))[0]
-        font_path = f"./temp/font/{font_path}"
+            def draw_text(basenoimage, text_height, linesnn):
+                draw = ImageDraw.Draw(basenoimage)
+                start_y = text_area_start_y + (text_area_height - text_height) // 2
+                current_y = start_y
+                for i, line in enumerate(linesnn):
+                    if line:
+                        bbox = font.getbbox(line)
+                        text_width = bbox[2] - bbox[0]
+                        text_x = (1920 - text_width) // 2
+                        if toggle_shorts:
+                            text_x = (1080 - text_width) // 2
+                        text_color = (0, 0, 0)
+                        draw.text((text_x, current_y), line, fill=text_color, font=font)
+                    current_y += line_height
 
-        font = ImageFont.truetype(font_path, 60)
+            if not pathlib.Path("./temp").exists():
+                pathlib.Path("./temp").mkdir(parents=True, exist_ok=True)
+            if not pathlib.Path("./temp/key").exists():
+                pathlib.Path("./temp/key").mkdir(parents=True, exist_ok=True)
 
-        text1 = value[0]
-        text2 = value[1]
-
-        text_area_width = 1850
-        text_area_start_y = 560
-        text_area_height = 540
-
-        if toggle_shorts:
-            text_area_width = 960
-            text_area_start_y = 540
-            text_area_height = 1080 + 100
-
-        lines1 = wrap_text(text1, font, text_area_width)
-        lines2 = wrap_text(text2, font, text_area_width)
-
-        line_height = 50
-        text1_height = len(lines1) * line_height
-        text2_height = len(lines2) * line_height
-
-        def draw_text(basenoimage, text_height, linesnn):
-            """テキストを画像に描画する"""
-            
-            draw = ImageDraw.Draw(basenoimage)
-            start_y = text_area_start_y + (text_area_height - text_height) // 2
-            
-            current_y = start_y
-            for i, line in enumerate(linesnn):
-                if line:
-                    bbox = font.getbbox(line)
-                    text_width = bbox[2] - bbox[0]
-                    text_x = (1920 - text_width) // 2
-                    if toggle_shorts:
-                        text_x = (1080 - text_width) // 2
-                    
-                    text_color = (0, 0, 0)
-                    
-                    draw.text((text_x, current_y), line, fill=text_color, font=font)
-                
-                current_y += line_height
-            
-        if not pathlib.Path("./temp").exists():
-            pathlib.Path("./temp").mkdir(parents=True, exist_ok=True)
-
-        if not pathlib.Path("./tem/key").exists():
-            pathlib.Path("./temp/key").mkdir(parents=True, exist_ok=True)
-
-        draw_text(page1, text1_height, lines1)
-        draw_text(page2, text2_height, lines2)
-
-
-        page1.save(f"./temp/key/{key}_page1.png")
-        page2.save(f"./temp/key/{key}_page2.png")
-
-        generate_voice(text1, f"{key}_page1")
-        generate_voice(text2, f"{key}_page2")
+            for page_idx, page_text in enumerate(texts):
+                page_img = base.copy()
+                lines = wrap_text(page_text, font, text_area_width)
+                text_height = len(lines) * line_height
+                draw_text(page_img, text_height, lines)
+                page_img.save(f"./temp/key/{key}_page{page_idx+1}.png")
+                generate_voice(page_text, f"{key}_page{page_idx+1}")
 
     generated_files = os.listdir("./temp/ai")
     generated_files_path = []
-
     for file in generated_files:
         generated_files_path.append(f"./temp/ai/{file}")
-
     print(f"生成されたファイル: {generated_files_path}")
-
     return sorted(generated_files_path)
 
 
@@ -156,9 +133,13 @@ if __name__ == "__main__":
     """
     {
         "key1": [
-            "このリポジトリは、カスタマイズ可能な検索インターフェースを提供するSvelteアプリケーションです。ユーザーは複数の検索エンジン（Google、Bing、DuckDuckGoなど）を選択し、キーボードショートカットで検索ボックスにフォーカスを当てて検索できます。また、GGRKSやGGRBKに関する情報も確認できます。",
-            "UIデザインはシンプルで、ダークモードに対応した入力フィールドとボタンが特徴です。検索エンジンの選択はドロップダウンから行い、カスタマイズ可能な設定が可能です。ページ内にはヒントも表示され、ユーザーの利便性を考慮しています。", 
-            "A beautiful landscape with mountains and a river"
+            {
+                "text": [
+                    "このリポジトリは、カスタマイズ可能な検索インターフェースを提供するSvelteアプリケーションです。ユーザーは複数の検索エンジン（Google、Bing、DuckDuckGoなど）を選択し、キーボードショートカットで検索ボックスにフォーカスを当てて検索できます。また、GGRKSやGGRBKに関する情報も確認できます。",
+                    "UIデザインはシンプルで、ダークモードに対応した入力フィールドとボタンが特徴です。検索エンジンの選択はドロップダウンから行い、カスタマイズ可能な設定が可能です。ページ内にはヒントも表示され、ユーザーの利便性を考慮しています。"
+                ],
+                "image_prompt": "A beautiful landscape with mountains and a river"
+            }
         ]
     }
     """,
