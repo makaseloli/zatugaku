@@ -6,13 +6,13 @@ import zipfile
 
 g = Github(GH_TOKEN)
 
-def clone_repo(repo_url: str):
+def clone_repo(repo_url: str, branch: str = 'main') -> str:
     
     repo = g.get_repo(repo_url)
     if not repo:
         return "クローンに失敗しました。URLが正しいか確認してください。"
     
-    download_url = repo.get_archive_link(archive_format='zipball')
+    download_url = repo.get_archive_link(archive_format='zipball', ref=branch)
 
     pathlib.Path("./temp/repo").mkdir(parents=True, exist_ok=True)
 

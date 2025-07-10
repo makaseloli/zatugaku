@@ -63,7 +63,7 @@ def video_gen_handler():
 
     return "./temp/final_video_with_bgm.mp4"
 
-def process_upload(repo_name, bgm_files, font_files):
+def process_upload(repo_name, bgm_files, font_files, branch_name):
     """アップロードされたファイルを処理するハンドラー"""
 
     clean_temp_directory()
@@ -84,8 +84,7 @@ def process_upload(repo_name, bgm_files, font_files):
     shutil.copy2(font_files.name, "./temp/font")
     shutil.copy2(bgm_files.name, "./temp/bgm")
 
-    clone_repo(repo_name)
-    
+    clone_repo(repo_name, branch_name)
     try:
         result = create_index()
         return result
@@ -111,11 +110,16 @@ def define_gradio_interface():
                         label="リポジトリ名を入力",
                         placeholder="makaseloli/zatugaku"
                     )
+                    branch_input = gr.Textbox(
+                        label="ブランチ名を入力",
+                        placeholder="main",
+                        value="main"
+                    )
                     bgm_input = gr.File(
                         label="BGMファイルをアップロード",
                         file_types=[".mp3", ".wav"]
                     )
-                    font_inuput = gr.File(
+                    font_input = gr.File(
                         label="フォントファイルをアップロード",
                         file_types=[".ttf", ".otf"],
                     )
@@ -126,7 +130,7 @@ def define_gradio_interface():
 
                     upload_button.click(
                         fn=process_upload,
-                        inputs=[upload_input, bgm_input, font_inuput],
+                        inputs=[upload_input, bgm_input, font_input, branch_input],
                         outputs=[upload_process]
                     )
 
